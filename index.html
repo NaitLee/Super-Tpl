@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFS Template Plus</title>
+</head>
+<body>
+    <section>
+        <h1>Super-Tpl</h1>
+        <p>Split an HFS Template to several files, then join them to one file.</p>
+        <p>You can also use TypeScript in script files, they will be transpiled.</p>
+        <p>Please, name all files like this format: <code>~+special%3Aalias%7Ccache.txt -&gt; [+special:alias|cache]</code>.</p>
+        <p></p>
+        <p>Input files: <input type="file" multiple /> <button>OK</button></p>
+        <p></p>
+        <p>Output file will be downloaded.</p>
+    </section>
+    <script src="typescriptServices.js"></script>
+    <script>
+        class Converter {
+            constructor() {
+                this.fileInput = document.querySelector('input[type="file"]');
+                this.button = document.querySelector('button');
+                this.button.addEventListener('click', this.convert.bind(this));
+            }
+            convert() {
+                class FileStatics {
+                    constructor(file) {
+                        this.sectionName = decodeURIComponent(file.name.split('.').slice(0, -1).join('.').slice(1));
+                        this.fileType = file.name.split('.').slice(-1)[0];
+                    }
+                }
+                let files = this.fileInput.files;
+                let result = '';
+                for (let i in files) {
+                    let file = files[i];
+                    let fileStatics = new FileStatics(file);
+                    let reader = new FileReader();
+                    reader.onload = event => {
+                        let content = event.target.result;
+                        switch (fileStatics.fileType) {
+                            case 'ts':
+                                content = window.ts.transpile(content);
+                                break;
+                        }
+                        result += `\n[${fileStatics.sectionName}]\n${content}\n`;
+                        if (i == files.length - 1) {
+                            let blob = new Blob([result]);
+                            let a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = Math.random() + '.tpl';
+                            a.click();
+                        }
+                    }
+                    reader.readAsText(file);
+                }
+            }
+        }
+        window.converter = new Converter();
+    </script>
+</body>
+</html>
