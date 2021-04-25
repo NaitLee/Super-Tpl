@@ -13,7 +13,6 @@ class Watchdog():
         for i in self.files:
             self.oldstats[i] = os.stat(i).st_mtime
     def watch(self):
-        time.sleep(1.0)
         newstats = {}
         for i in self.files:
             newstats[i] = os.stat(i).st_mtime
@@ -32,6 +31,7 @@ if __name__ == '__main__':
     watchdog = Watchdog(sys.argv[1])
     try:
         while True:
+            time.sleep(1.0)
             watchdog.watch()
     except KeyboardInterrupt:
         pass
