@@ -12,11 +12,17 @@ def convert(dirname = './'):
         content = f.read()
         f.close()
         if i.endswith('.ts'):
-            b64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
-            os.system(f'node -e "let ts = require(\'./typescriptServices\'); console.log(ts.transpile(Buffer.from(\'{b64}\', \'base64\').toString(\'utf8\')));">.temp.js')
+            g = open('.temp.ts', 'w', encoding='utf-8')
+            g.write(content)
+            g.close()
+            code = os.system('node -e "const ts = require(\'./typescriptServices\'); const fs = require(\'fs\'); fs.readFile(\'.temp.ts\', \'utf8\', (err, data) => { console.log(ts.transpile(data)); });" > .temp.js')
+            if code != 0:
+                print('\n * Error on ts to js convert: exit code (%i)' % code)
+                continue
             f = open('.temp.js', 'r', encoding='utf-8')
             js = f.read()
             f.close()
+            os.remove('.temp.ts')
             os.remove('.temp.js')
             content = js
         section = '.'.join(urllib.parse.unquote(i).split('.')[0:-1])[1:]
